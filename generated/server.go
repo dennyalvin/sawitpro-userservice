@@ -1,7 +1,6 @@
 package generated
 
 import (
-	"fmt"
 	"github.com/SawitProRecruitment/UserService/helper"
 	"github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -9,9 +8,9 @@ import (
 )
 
 type ServerInterface interface {
-	Register(c echo.Context, params *SignupParams) error
-	Login(c echo.Context, params *LoginParams) error
-	UpdateProfile(c echo.Context, id int, params *ProfileUpdateParams) error
+	Register(c echo.Context, params SignupParams) error
+	Login(c echo.Context, params LoginParams) error
+	UpdateProfile(c echo.Context, id int, params ProfileUpdateParams) error
 	GetProfileDetail(c echo.Context, id int) error
 }
 
@@ -29,7 +28,7 @@ func RegisterHandlers(e *echo.Echo, s ServerInterface) {
 			return err
 		}
 
-		return s.Register(c, &params)
+		return s.Register(c, params)
 	})
 
 	user.POST("/login", func(c echo.Context) error {
@@ -39,7 +38,7 @@ func RegisterHandlers(e *echo.Echo, s ServerInterface) {
 			return err
 		}
 
-		return s.Login(c, &params)
+		return s.Login(c, params)
 	})
 
 	// route with auth jwt middleware
@@ -58,7 +57,7 @@ func RegisterHandlers(e *echo.Echo, s ServerInterface) {
 			return err
 		}
 
-		return s.UpdateProfile(c, userId, &params)
+		return s.UpdateProfile(c, userId, params)
 	}, middlewareEchoJWT())
 }
 
@@ -75,7 +74,6 @@ func middlewareEchoJWT() echo.MiddlewareFunc {
 	return echojwt.WithConfig(echojwt.Config{
 		SigningKey: helper.JWTSecretKey,
 		ErrorHandler: func(c echo.Context, err error) error {
-			fmt.Print("sdfd")
 			// as assignment expected need to return Forbidden status code
 			return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 		},

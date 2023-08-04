@@ -9,8 +9,15 @@ import (
 	"net/http"
 )
 
-func (s *Server) Login(c echo.Context, params *generated.LoginParams) error {
+func (s *Server) Login(c echo.Context, params generated.LoginParams) error {
 	ctx := c.Request().Context()
+
+	//Validate Request
+	errValidation := s.ValidateLoginRequest(params)
+	if errValidation != nil {
+		return generated.WrapResponseJsonBadRequest(c, errValidation)
+	}
+
 	//Find user by Phone
 	user, err := s.Repository.FindBy(ctx, "phone", params.Phone)
 
@@ -25,7 +32,7 @@ func (s *Server) Login(c echo.Context, params *generated.LoginParams) error {
 	}
 
 	//If user is found, then compare the password
-	if !isPasswordValid(user.Password, params.Password) {
+	if !isPasswordMatch(user.Password, params.Password) {
 		return echo.NewHTTPError(http.StatusBadRequest, "phone number or password is incorrect")
 	}
 
@@ -48,10 +55,10 @@ func (s *Server) Login(c echo.Context, params *generated.LoginParams) error {
 		Token: token,
 	}
 
-	return generated.WrapResponseJson(c, "Login successful", auth)
+	return generated.WrapResponseJsonOK(c, "Login successful", auth)
 }
 
-func isPasswordValid(hashedPassword string, plainPassword string) bool {
+func isPasswordMatch(hashedPassword string, plainPassword string) bool {
 	saltedPass := helper.SaltString(plainPassword)
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(saltedPass))
 	if err != nil {
@@ -59,4 +66,12 @@ func isPasswordValid(hashedPassword string, plainPassword string) bool {
 		return false
 	}
 	return true
+}
+
+func (s *Server) ValidateLoginRequest(params generated.LoginParams) []generated.ErrorDetail {
+	var errs []generated.ErrorDetail
+
+	errs = ValidateStruct(params)
+
+	return errs
 }

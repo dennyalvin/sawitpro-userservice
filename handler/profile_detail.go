@@ -27,5 +27,5 @@ func (s *Server) GetProfileDetail(c echo.Context, id int) error {
 		Phone:    user.Phone,
 	}
 
-	return generated.WrapResponseJson(c, "OK", resp)
+	return generated.WrapResponseJsonOK(c, "OK", resp)
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/helper"
 	"github.com/SawitProRecruitment/UserService/model"
@@ -9,7 +10,13 @@ import (
 	"net/http"
 )
 
-func (s *Server) Register(c echo.Context, params *generated.SignupParams) error {
+func (s *Server) Register(c echo.Context, params generated.SignupParams) error {
+
+	//Validate Request
+	errValidation := s.ValidateRegistrationRequest(params)
+	if errValidation != nil {
+		return generated.WrapResponseJsonBadRequest(c, errValidation)
+	}
 
 	//Hash Password
 	hashedPassword, err := hashPassword(params.Password)
@@ -37,7 +44,7 @@ func (s *Server) Register(c echo.Context, params *generated.SignupParams) error 
 		Phone:    newUser.Phone,
 	}
 
-	return generated.WrapResponseJson(c, "New user successfully created", resp)
+	return generated.WrapResponseJsonOK(c, "New user successfully created", resp)
 }
 
 func hashPassword(password string) (string, error) {
@@ -49,4 +56,25 @@ func hashPassword(password string) (string, error) {
 	}
 
 	return string(hashedPassword), nil
+}
+
+func (s *Server) ValidateRegistrationRequest(params generated.SignupParams) []generated.ErrorDetail {
+	var errs []generated.ErrorDetail
+
+	errs = ValidateStruct(params)
+	if errs != nil {
+		return errs
+	}
+
+	user, _ := s.Repository.FindBy(context.Background(), "phone", params.Phone)
+	if user != nil {
+		errs = append(errs, generated.ErrorDetail{
+			Title:   "phone",
+			Message: "is already exists",
+		})
+
+		return errs
+	}
+
+	return errs
 }

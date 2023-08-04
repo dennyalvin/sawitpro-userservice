@@ -39,7 +39,7 @@ func (repository UserRepository) Create(ctx context.Context, user model.User) (*
 	return &user, nil
 }
 
-func (repository UserRepository) Update(ctx context.Context, userId int, payload *generated.ProfileUpdateParams) error {
+func (repository UserRepository) Update(ctx context.Context, userId int, payload generated.ProfileUpdateParams) error {
 	var setQuery string
 	var values []any
 	var columnUpdate map[string]any
@@ -49,7 +49,7 @@ func (repository UserRepository) Update(ctx context.Context, userId int, payload
 	}
 
 	if payload.Phone != nil {
-		columnUpdate = map[string]any{"full_name": payload.FullName}
+		columnUpdate = map[string]any{"phone": payload.Phone}
 	}
 
 	setQuery, values = db.GenerateSqlUpdateAndArgument(columnUpdate)
