@@ -14,7 +14,7 @@ type NewUserRepositoryOptions struct {
 }
 
 func NewUserRepository(opts NewUserRepositoryOptions) UserRepository {
-	dbCon := db.OpenDBConnection()
+	dbCon := db.OpenDBConnection(opts.Dsn)
 	return UserRepository{
 		DB: dbCon,
 	}

@@ -8,26 +8,13 @@ import (
 	"time"
 )
 
-func GetConString() string {
-	//host = os.Getenv("DB_HOST")
-	//port = os.Getenv("DB_PORT")
-	//username = os.Getenv("DB_USER")
-	//password = os.Getenv("DB_PASS")
-	//dbname = os.Getenv("DB_NAME")
+func OpenDBConnection(dsn string) *sql.DB {
+	if dsn == "" {
+		panic("Please set ENV DATABASE_URL")
+	}
 
-	host := "localhost"
-	port := "5432"
-	username := "denny"
-	password := "12345678"
-	dbname := "sawitpro"
+	db, err := sql.Open("postgres", dsn)
 
-	conString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, dbname)
-	return conString
-}
-
-func OpenDBConnection() *sql.DB {
-	db, err := sql.Open("postgres", GetConString())
-	//helper.PanicIfError(err)
 	if err != nil {
 		panic(err)
 	}
