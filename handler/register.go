@@ -61,11 +61,13 @@ func hashPassword(password string) (string, error) {
 func (s *Server) ValidateRegistrationRequest(params generated.SignupParams) []generated.ErrorDetail {
 	var errs []generated.ErrorDetail
 
+	// validate the struct based on validate tag
 	errs = ValidateStruct(params)
 	if errs != nil {
 		return errs
 	}
 
+	// check is phone already exist on DB
 	user, _ := s.Repository.FindBy(context.Background(), "phone", params.Phone)
 	if user != nil {
 		errs = append(errs, generated.ErrorDetail{

@@ -9,7 +9,7 @@ type ProfileUpdateParams struct {
 type SignupParams struct {
 	Phone    string `json:"phone" validate:"required,phone"`
 	FullName string `json:"full_name" validate:"required,min=3,max=60"`
-	Password string `json:"password" validate:"required,min=6,max=64,password"`
+	Password string `json:"password" validate:"required,min=6,max=64,secure_password"`
 }
 
 type LoginParams struct {

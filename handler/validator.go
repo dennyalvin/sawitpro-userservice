@@ -9,6 +9,15 @@ import (
 	"strings"
 )
 
+const (
+	StatusIsRequired    = "is required"
+	StatusMinLengthIs   = "min length is"
+	StatusMinValueIs    = "min value is"
+	StatusMaxLengthIs   = "max length is"
+	StatusMaxValueIs    = "max value is"
+	StatusInvalidFormat = "format is invalid"
+)
+
 func ValidateStruct(s interface{}) []generated.ErrorDetail {
 	var errs []generated.ErrorDetail
 
@@ -51,42 +60,55 @@ func ValidateStruct(s interface{}) []generated.ErrorDetail {
 func validateTag(fieldName string, tag string, value reflect.Value) *generated.ErrorDetail {
 	msg := ""
 
+	// Get element if kind of pointer
 	if value.Kind() == reflect.Ptr {
 		value = value.Elem()
 	}
 
 	if tag == "required" && (value.IsZero()) {
-		msg = "is required"
+		// if struct has required tag name and value is empty
+		msg = StatusIsRequired
 	} else if strings.Contains(tag, "min=") {
-
+		// if struct field has min tag, then validate
 		sep := strings.Split(tag, "min=")
 		if len(sep) == 2 {
 			minValue, _ := strconv.Atoi(sep[1])
 
 			if value.Kind() == reflect.String && len(value.String()) < minValue {
-				msg = fmt.Sprintf("min length is %d", minValue)
+				msg = fmt.Sprintf("%s %d", StatusMinLengthIs, minValue)
 			} else if value.Kind() == reflect.Int && int(value.Int()) < minValue {
-				msg = fmt.Sprintf("min value is %d", minValue)
+				msg = fmt.Sprintf("%s %d", StatusMinValueIs, minValue)
 			}
 		}
 
 	} else if strings.Contains(tag, "max=") {
+		// if struct field contain max tag, then validate
 		sep := strings.Split(tag, "max=")
 		if len(sep) == 2 {
 			maxValue, _ := strconv.Atoi(sep[1])
 
 			if value.Kind() == reflect.String && len(value.String()) > maxValue {
-				msg = fmt.Sprintf("max length is %d", maxValue)
+				msg = fmt.Sprintf("%s %d", StatusMaxLengthIs, maxValue)
 			} else if value.Kind() == reflect.Int && int(value.Int()) > maxValue {
-				msg = fmt.Sprintf("max value is %d", maxValue)
+				msg = fmt.Sprintf("%s %d", StatusMaxValueIs, maxValue)
 			}
 		}
 
 	} else if tag == "phone" && !value.IsZero() && !validPhoneNumber(value.String()) {
-		msg = "invalid phone format"
+		// if struct field has phone tag, and format is not valid
+		msg = StatusInvalidFormat
+	} else if tag == "secure_password" && !value.IsZero() {
+		// check password security
+		passCheck, errMsg := isSecurePassword(value.String())
+
+		if !passCheck {
+			// if struct field has secure_password tag, and is not secure enough
+			msg = errMsg
+		}
 	}
 
 	if len(msg) > 0 {
+		// generate error bad request details
 		return &generated.ErrorDetail{
 			Title:   fieldName,
 			Message: msg,
@@ -99,4 +121,26 @@ func validateTag(fieldName string, tag string, value reflect.Value) *generated.E
 func validPhoneNumber(phone string) bool {
 	pattern := `^\+62\d{7,10}$`
 	return regexp.MustCompile(pattern).MatchString(phone)
+}
+
+func isSecurePassword(input string) (bool, string) {
+	var msg []string
+
+	// make regex description
+	reg := map[string]string{
+		`.{6,}`: "min length is 6 char",
+		`[A-Z]`: "must contains at least one capital letter",
+		`\d`:    "must containts at least one number",
+		`\W`:    "must contains at least one special char",
+	}
+
+	secure := true
+	for m, v := range reg {
+		if !regexp.MustCompile(m).MatchString(input) {
+			secure = false
+			msg = append(msg, v)
+		}
+	}
+
+	return secure, strings.Join(msg, ", ")
 }
