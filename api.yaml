@@ -1,0 +1,208 @@
+# This is the OpenAPI specification for your service. It is used to generate the client code.
+# To generate the server code, use the Gradle task `openApiGenerate`. The
+# generated code will be placed in `build/generate-resources/main`.
+#
+# We will evaluate you based on how well you design your API.
+# 1. How well it follows REST principles.
+# 2. How easy it is to understand and use.
+#
+# References
+# 1. https://swagger.io/specification/
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: User Service
+  license:
+    name: MIT
+servers:
+  - url: http://localhost
+paths:
+  /api/users/register:
+    post:
+      summary: Register a new user
+      parameters:
+        - in: header
+          name: Content-Type
+          schema:
+            type: string
+            required: true
+          example: application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            examples:
+              Valid-Payload:
+                value:
+                  phone: '+6281381789175'
+                  full_name: 'Denny Alvin'
+                  password: '12345678'
+      responses:
+        '200':
+          description: 'Success Register'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                  message: 'New user successfully created'
+                  data:
+                    full_name: 'Denny Alvin'
+                    phone: '+6281381789175'
+        '400':
+          description: 'Bad Request'
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                'Blank full_name':
+                  value:
+                    message: 'full_name is required'
+                    data:
+                'Blank phone':
+                  value:
+                    message: 'phone is required'
+                    data:
+                'Blank password':
+                  value:
+                    message: 'password is required'
+                    data:
+  /api/users/login:
+    post:
+      summary: Login
+      parameters:
+        - in: header
+          name: Content-Type
+          schema:
+            type: string
+            required: true
+          example: application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            examples:
+              Valid-Payload:
+                value:
+                  phone: '+6281381789175'
+                  password: '12345678'
+      responses:
+        '200':
+          description: 'Login Success'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                  message: 'Login successful'
+                  data:
+                    id: 7
+                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTEyMDA0NDUsImlzcyI6OSwic3ViIjo5fQ.qh1Hq77ZtiQAFWjObfNHitNU_OorVdow8I6-FaZ_W4U
+        '400':
+          description: 'Bad Request'
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                'Blank phone':
+                  value:
+                    message: 'phone is required'
+                    data:
+                'Blank password':
+                  value:
+                    message: 'password is required'
+                    data:
+  /api/users/show:
+    get:
+      summary: User Profile
+      parameters:
+        - in: header
+          name: Content-Type
+          schema:
+            type: string
+            required: true
+          example: application/json
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+            required: true
+          example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTEyMDA0NDUsImlzcyI6OSwic3ViIjo5fQ.qh1Hq77ZtiQAFWjObfNHitNU_OorVdow8I6-FaZ_W4U
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                  message: 'OK'
+                  data:
+                    full_name: 'Denny Alvin'
+                    phone: '+628834234234'
+        '403':
+          description: 'Bad Request'
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                'Invalid Authorization':
+                  value:
+                    message: 'Forbidden'
+
+  /api/users:
+    patch:
+      summary: Update Profile
+      parameters:
+        - in: header
+          name: Content-Type
+          schema:
+            type: string
+            required: true
+          example: application/json
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+            required: true
+          example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTEyMDA0NDUsImlzcyI6OSwic3ViIjo5fQ.qh1Hq77ZtiQAFWjObfNHitNU_OorVdow8I6-FaZ_W4U
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+            examples:
+              Valid-Payload:
+                value:
+                  phone: '+6281381789175'
+                  full_name: 'Denny Alvin edited'
+      responses:
+        '200':
+          description: 'Update Success'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: 'profile updated'
+                data:
+
+        '400':
+          description: 'Bad Request'
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                'Invalid phone format':
+                  value:
+                    message: 'phone is format is not valid'
+                    data:
